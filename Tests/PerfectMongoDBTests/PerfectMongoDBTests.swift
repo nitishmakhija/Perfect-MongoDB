@@ -242,7 +242,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testClientConnect() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
+		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
 		let status = client.serverStatus()
 		switch status {
 		case .error(let domain, let code, let message):
@@ -261,7 +261,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testClientGetDatabase() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
+		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		db.close()
@@ -269,7 +269,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testDBCreateCollection() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
+		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -295,7 +295,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testClientGetDatabaseNames() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
+		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -341,7 +341,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testGetCollection() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
+		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
         guard let col = db.getCollection(name: "testcollection") else {
             XCTAssert(false, "Collection was nil")
@@ -354,7 +354,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testDeleteDoc() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
+		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -402,7 +402,7 @@ class PerfectMongoDBTests: XCTestCase {
     
     
     func testCollectionFind() {
-        let client = try! MongoClient(uri: "mongodb://localhost")
+        let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
         let db = client.getDatabase(name: "test")
         XCTAssert(db.name() == "test")
         
@@ -491,7 +491,7 @@ class PerfectMongoDBTests: XCTestCase {
         let collectionName = "testdistinctcollection"
         let attributeName = "attribute"
         
-        let client = try! MongoClient(uri: "mongodb://localhost")
+        let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
         let db = client.getDatabase(name: "test")
         XCTAssert(db.name() == "test")
         
@@ -550,7 +550,7 @@ class PerfectMongoDBTests: XCTestCase {
     }
 
 	func testUpdate() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
+		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -642,131 +642,11 @@ class PerfectMongoDBTests: XCTestCase {
 		
 	}
 
-	func testGridFS() {
-		let client = try! MongoClient(uri: "mongodb://localhost")
-		var gridfs: GridFS
-		do {
-			gridfs = try client.gridFS(database: "test")
-		} catch {
-			XCTFail("gridfs open: \(error)")
-			return
-		}
-		
-		defer {
-			gridfs.close()
-		}
-		
-		// test list / delete
-		do {
-			let a = try gridfs.list()
-			XCTAssertGreaterThanOrEqual(a.count, 0)
-			try a.forEach { try $0.delete() }
-		} catch {
-			XCTFail("gridfs list / delete: \(error)")
-		}
-		
-		let secret:[UInt8] = [65, 66, 67, 68, 0] // "ABCD\0"
-		var fp = fopen("/tmp/secret.txt", "wb")
-		fwrite(secret, 1, secret.count, fp)
-		fclose(fp)
-		
-		// test upload / download / properties
-		do {
-			let f = try gridfs.upload(from: "/tmp/secret.txt", to: "secret.txt", md5: "abcd1234")
-			XCTAssertNotNil(f)
-			XCTAssertEqual(f.contentType, "text/plain")
-			XCTAssertEqual(f.md5, "abcd1234")
-			XCTAssertEqual(f.length, Int64(secret.count))
-			let dl = try f.download(to: "/tmp/secret2.txt")
-			XCTAssertEqual(dl, secret.count)
-		} catch {
-			XCTFail("gridfs.upload / download mismatched = \(error)")
-		}
-		
-		var secret2:[UInt8] = [0, 0, 0, 0, 0]
-		fp = fopen("/tmp/secret2.txt", "rb")
-		let _ = secret2.withUnsafeMutableBufferPointer{ p in
-			fread(p.baseAddress, 1, 5, fp)
-		}
-		fclose(fp)
-		for i in 0...4 {
-			XCTAssertEqual(secret[i], secret2[i])
-		}//next i
-		
-		unlink("/tmp/secret.txt")
-		unlink("/tmp/secret2.txt")
-		
-		
-		// test big file upload
-		let local = "/tmp/base128.dat"
-		let sz = 134217728 / 3 // 128MB / 3
-		let buffer = [UInt8](repeating: 66, count:sz)
-		fp = fopen(local, "wb")
-		fwrite(buffer, 1, sz, fp)
-		fclose(fp)
-		let remote = "base128.dat"
-		
-		do {
-			let f = try gridfs.upload(from: local, to: remote)
-			XCTAssertNotNil(f)
-			f.close()
-		} catch {
-			XCTFail("gridfs.upload failed = \(error)")
-		}
-		unlink(local)
-		
-		// test search partially read / write
-		do {
-			let f = try gridfs.search(name: remote)
-			let mb = 1048576 / 3
-			try f.seek(cursor: Int64(mb))
-			let bytes = try f.partiallyRead(amount: UInt32(mb))
-			XCTAssertEqual(bytes.count, mb)
-			bytes.forEach { XCTAssertEqual($0, 66) }
-			try f.seek(cursor: Int64(mb * 10))
-			let buf = [UInt8](repeating: 67, count: mb)
-			let sz = try f.partiallyWrite(bytes: buf)
-			XCTAssertEqual(sz, mb)
-			try f.seek(cursor: Int64(mb * 10))
-			let buf2 = try f.partiallyRead(amount: UInt32(mb))
-			buf2.forEach{ XCTAssertEqual($0, 67) }
-			try f.delete()
-		} catch {
-			XCTFail("gridfs partially read / write: \(error)")
-		}
-		
-		// test leaky
-		do {
-			for i in 0...20 {
-				let toUpload = "upload\(i).bin"
-				fp = fopen("/tmp/\(toUpload)", "wb")
-				fwrite(buffer, 1, sz, fp)
-				fclose(fp)
-				let fx = try gridfs.upload(from: "/tmp/\(toUpload)", to: toUpload)
-				XCTAssertNotNil(fx)
-				let dl = try fx.download(to: "/tmp/download\(i).bin")
-				XCTAssertEqual(dl, sz)
-			}
-		} catch {
-			XCTFail("gridfs leaky: \(error)")
-		}
-		
-		// clean up
-		do {
-			let a = try gridfs.list()
-			try a.forEach { file in
-				try file.delete()
-			}
-		} catch {
-			XCTFail("gridfs list: \(error)")
-		}
-	}
-
     func testAggregate() {
         let groupsCollectionName = "testaggregate.groups"
         let usersCollectionName = "testaggregate.users"
         
-        let client = try! MongoClient(uri: "mongodb://localhost")
+        let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
         let db = client.getDatabase(name: "test")
         XCTAssert(db.name() == "test")
         
@@ -891,7 +771,6 @@ extension PerfectMongoDBTests {
             ("testDeleteDoc", testDeleteDoc),
             ("testCollectionFind", testCollectionFind),
             ("testCollectionDistinct", testCollectionDistinct),
-            ("testGridFS", testGridFS),
             ("testNewObjectIdGeneration", testNewObjectIdGeneration)
         ]
     }
