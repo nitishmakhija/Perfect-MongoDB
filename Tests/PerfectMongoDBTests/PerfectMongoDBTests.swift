@@ -242,7 +242,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testClientConnect() {
-		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+		let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
 		let status = client.serverStatus()
 		switch status {
 		case .error(let domain, let code, let message):
@@ -261,7 +261,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testClientGetDatabase() {
-		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+		let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		db.close()
@@ -269,7 +269,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testDBCreateCollection() {
-		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+		let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -295,7 +295,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testClientGetDatabaseNames() {
-		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+		let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -341,7 +341,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testGetCollection() {
-		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+		let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
         guard let col = db.getCollection(name: "testcollection") else {
             XCTAssert(false, "Collection was nil")
@@ -354,7 +354,7 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testDeleteDoc() {
-		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+		let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -402,7 +402,7 @@ class PerfectMongoDBTests: XCTestCase {
     
     
     func testCollectionFind() {
-        let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+        let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
         let db = client.getDatabase(name: "test")
         XCTAssert(db.name() == "test")
         
@@ -491,7 +491,7 @@ class PerfectMongoDBTests: XCTestCase {
         let collectionName = "testdistinctcollection"
         let attributeName = "attribute"
         
-        let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+        let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
         let db = client.getDatabase(name: "test")
         XCTAssert(db.name() == "test")
         
@@ -550,7 +550,7 @@ class PerfectMongoDBTests: XCTestCase {
     }
 
 	func testUpdate() {
-		let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+		let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
 		let db = client.getDatabase(name: "test")
 		XCTAssert(db.name() == "test")
 		
@@ -646,7 +646,7 @@ class PerfectMongoDBTests: XCTestCase {
         let groupsCollectionName = "testaggregate.groups"
         let usersCollectionName = "testaggregate.users"
         
-        let client = try! MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+        let client = try! MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
         let db = client.getDatabase(name: "test")
         XCTAssert(db.name() == "test")
         
