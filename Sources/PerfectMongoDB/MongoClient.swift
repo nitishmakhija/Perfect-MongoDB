@@ -47,6 +47,16 @@ public enum MongoClientError: Error {
      *  returns error string
      */
     case initError(String)
+    
+    static func fromError(_ error: bson_error_t) -> MongoClientError {
+        var vError = error
+        let message = withUnsafePointer(to: &vError.message) {
+            return $0.withMemoryRebound(to: CChar.self, capacity: 0) {
+                String(validatingUTF8: $0) ?? "unknown error"
+            }
+        }
+        return .initError(message)
+    }
 }
 
 public class MongoClient {
@@ -65,8 +75,9 @@ public class MongoClient {
      *
     */
 	public init(uri: String) throws {
-        guard let ptr = mongoc_client_new(uri) else {
-            throw MongoClientError.initError("Could not parse URI '\(uri)'")
+        var error = bson_error_t()
+        guard let new_uri = mongoc_uri_new_with_error(uri, &error), let ptr = mongoc_client_new_from_uri(new_uri) else {
+            throw MongoClientError.fromError(error)
         }
         self.ptr = ptr
 	}
@@ -138,7 +149,8 @@ public class MongoClient {
     */
 	public func databaseNames() -> [String] {
 		var ret = [String]()
-		guard let names = mongoc_client_get_database_names(self.ptr, nil) else {
+        var error = bson_error_t()
+		guard let names = mongoc_client_get_database_names(self.ptr, &error) else {
 			return ret
 		}
 		var curr = names

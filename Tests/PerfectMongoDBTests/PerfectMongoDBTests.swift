@@ -31,7 +31,7 @@ class PerfectMongoDBTests: XCTestCase {
 			defer {
 				bson.close()
 			}
-			let backToJson = bson.description
+			let backToJson = bson.asString
             print("sdfksdkjfhdskfhkjsdhfjkds")
 			print(jsonResult == backToJson)
 			XCTAssert(jsonResult == backToJson, backToJson)
@@ -242,33 +242,33 @@ class PerfectMongoDBTests: XCTestCase {
 		XCTAssert(cmp, "\n\(bson.asString)\n\(bson2.asString)\n")
 	}
 	
-//    func testClientConnect() {
-//        do {
-//            let client = try MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
-//            print(client.databaseNames())
-////            let status = client.serverStatus()
-////            switch status {
-////            case .error(let domain, let code, let message):
-////                XCTAssert(false, "Error: \(domain) \(code) \(message)")
-////            case .replyDoc(_):
-////                XCTAssert(true)
-////            default:
-////                XCTAssert(false, "Strange reply type \(status)")
-////            }
-//        } catch {
-//            XCTAssert(false, "Error: \(error)")
+    func testClientConnect() {
+        do {
+            let client = try MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+            print(client.databaseNames())
+//            let status = client.serverStatus()
+//            switch status {
+//            case .error(let domain, let code, let message):
+//                XCTAssert(false, "Error: \(domain) \(code) \(message)")
+//            case .replyDoc(_):
+//                XCTAssert(true)
+//            default:
+//                XCTAssert(false, "Strange reply type \(status)")
+//            }
+        } catch {
+            XCTAssert(false, "Error: \(error)")
+        }
+//        let client = try! MongoClient(uri: "mongodb+sv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+//        let status = client.serverStatus()
+//        switch status {
+//        case .error(let domain, let code, let message):
+//            XCTAssert(false, "Error: \(domain) \(code) \(message)")
+//        case .replyDoc(_):
+//            XCTAssert(true)
+//        default:
+//            XCTAssert(false, "Strange reply type \(status)")
 //        }
-////        let client = try! MongoClient(uri: "mongodb+sv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
-////        let status = client.serverStatus()
-////        switch status {
-////        case .error(let domain, let code, let message):
-////            XCTAssert(false, "Error: \(domain) \(code) \(message)")
-////        case .replyDoc(_):
-////            XCTAssert(true)
-////        default:
-////            XCTAssert(false, "Strange reply type \(status)")
-////        }
-//    }
+    }
 	
 	func testClientConnectFail() {
 		if let _ = try? MongoClient(uri: "mongoib//typo") {
@@ -277,13 +277,11 @@ class PerfectMongoDBTests: XCTestCase {
 	}
 	
 	func testClientGetDatabase() {
-        print("started")
-		let client = try? MongoClient(uri: "mongodb://nitish:hellsgate1@ds251877.mlab.com:51877/knock-your-sales-test")
-        print("ended")
-		let db = client?.getDatabase(name: "test")
-		XCTAssert(db?.name() == "test")
-		db?.close()
-		client?.close()
+		let client = try! MongoClient(uri: "mongodb://nitish:hellsgate1@ds251877.mlab.com:51877/knock-your-sales-test")
+		let db = client.getDatabase(name: "test")
+		XCTAssert(db.name() == "test")
+		db.close()
+		client.close()
 	}
 	
 	func testDBCreateCollection() {
@@ -780,7 +778,7 @@ extension PerfectMongoDBTests {
             ("testBSONHasFields", testBSONHasFields),
             ("testBSONIterate", testBSONIterate),
             ("testBSONCompare", testBSONCompare),
-//            ("testClientConnect", testClientConnect),
+            ("testClientConnect", testClientConnect),
             ("testClientConnectFail", testClientConnectFail),
             ("testClientGetDatabase", testClientGetDatabase),
             ("testDBCreateCollection", testDBCreateCollection),
