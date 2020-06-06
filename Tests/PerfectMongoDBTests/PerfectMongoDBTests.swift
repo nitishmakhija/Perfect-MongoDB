@@ -277,7 +277,7 @@ class PerfectMongoDBTests: XCTestCase {
 	
 	func testClientGetDatabase() {
         print("started")
-		let client = try? MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
+		let client = try? MongoClient(uri: "mongodb://nitish:hellsgate1@ds251877.mlab.com:51877/knock-your-sales-test")
         print("ended")
 		let db = client?.getDatabase(name: "test")
 		XCTAssert(db?.name() == "test")
