@@ -32,7 +32,8 @@ class PerfectMongoDBTests: XCTestCase {
 				bson.close()
 			}
 			let backToJson = bson.description
-			
+            print("sdfksdkjfhdskfhkjsdhfjkds")
+			print(jsonResult == backToJson)
 			XCTAssert(jsonResult == backToJson, backToJson)
 		} catch {
 			XCTAssert(false, "Exception was thrown \(error)")
