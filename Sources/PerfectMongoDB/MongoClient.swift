@@ -75,9 +75,11 @@ public class MongoClient {
      *
     */
 	public init(uri: String) throws {
-        var error = bson_error_t()
-        guard let new_uri = mongoc_uri_new_with_error(uri, &error), let ptr = mongoc_client_new_from_uri(new_uri) else {
-            throw MongoClientError.fromError(error)
+//        var error = bson_error_t()
+        guard let ptr = mongoc_client_new(uri) else {
+//        guard let new_uri = mongoc_uri_new_with_error(uri, &error), let ptr = mongoc_client_new_from_uri(new_uri) else {
+//            throw MongoClientError.fromError(error)
+            throw MongoClientError.initError("Could not parse URI '\(uri)'")
         }
         self.ptr = ptr
 	}

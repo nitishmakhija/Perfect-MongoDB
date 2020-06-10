@@ -244,7 +244,7 @@ class PerfectMongoDBTests: XCTestCase {
 	
     func testClientConnect() {
         do {
-            let client = try MongoClient(uri: "mongodb+srv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+            let client = try MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
             print(client.databaseNames())
 //            let status = client.serverStatus()
 //            switch status {
