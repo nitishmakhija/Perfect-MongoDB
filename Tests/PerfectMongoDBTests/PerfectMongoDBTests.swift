@@ -242,33 +242,33 @@ class PerfectMongoDBTests: XCTestCase {
 		XCTAssert(cmp, "\n\(bson.asString)\n\(bson2.asString)\n")
 	}
 	
-    func testClientConnect() {
-        do {
-            let client = try MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
-            print(client.databaseNames())
-//            let status = client.serverStatus()
-//            switch status {
-//            case .error(let domain, let code, let message):
-//                XCTAssert(false, "Error: \(domain) \(code) \(message)")
-//            case .replyDoc(_):
-//                XCTAssert(true)
-//            default:
-//                XCTAssert(false, "Strange reply type \(status)")
-//            }
-        } catch {
-            XCTAssert(false, "Error: \(error)")
-        }
-//        let client = try! MongoClient(uri: "mongodb+sv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
-//        let status = client.serverStatus()
-//        switch status {
-//        case .error(let domain, let code, let message):
-//            XCTAssert(false, "Error: \(domain) \(code) \(message)")
-//        case .replyDoc(_):
-//            XCTAssert(true)
-//        default:
-//            XCTAssert(false, "Strange reply type \(status)")
+//    func testClientConnect() {
+//        do {
+//            let client = try MongoClient(uri: "mongodb://nitish:test@cluster0-shard-00-00-hafng.mongodb.net:27017,cluster0-shard-00-01-hafng.mongodb.net:27017,cluster0-shard-00-02-hafng.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
+//            print(client.databaseNames())
+////            let status = client.serverStatus()
+////            switch status {
+////            case .error(let domain, let code, let message):
+////                XCTAssert(false, "Error: \(domain) \(code) \(message)")
+////            case .replyDoc(_):
+////                XCTAssert(true)
+////            default:
+////                XCTAssert(false, "Strange reply type \(status)")
+////            }
+//        } catch {
+//            XCTAssert(false, "Error: \(error)")
 //        }
-    }
+////        let client = try! MongoClient(uri: "mongodb+sv://nitish:test@cluster0-hafng.mongodb.net/test?retryWrites=true&w=majority")
+////        let status = client.serverStatus()
+////        switch status {
+////        case .error(let domain, let code, let message):
+////            XCTAssert(false, "Error: \(domain) \(code) \(message)")
+////        case .replyDoc(_):
+////            XCTAssert(true)
+////        default:
+////            XCTAssert(false, "Strange reply type \(status)")
+////        }
+//    }
 	
 	func testClientConnectFail() {
 		if let _ = try? MongoClient(uri: "mongoib//typo") {
@@ -778,7 +778,7 @@ extension PerfectMongoDBTests {
             ("testBSONHasFields", testBSONHasFields),
             ("testBSONIterate", testBSONIterate),
             ("testBSONCompare", testBSONCompare),
-            ("testClientConnect", testClientConnect),
+//            ("testClientConnect", testClientConnect),
             ("testClientConnectFail", testClientConnectFail),
             ("testClientGetDatabase", testClientGetDatabase),
             ("testDBCreateCollection", testDBCreateCollection),
