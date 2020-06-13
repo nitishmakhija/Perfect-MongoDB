@@ -27,7 +27,7 @@ public class MongoClientPool {
      *  create new ClientPool with provided String uri
      *
      *  - parameter uri: String uri to connect client pool
-    */
+     */
     public init(uri: String) {
         
         let uriPointer = mongoc_uri_new(uri)
@@ -57,11 +57,11 @@ public class MongoClientPool {
      *  Pop a client connection from the connection pool.
      *
      * - returns: MongoClient from connection pool
-    */
+     */
     public func popClient() -> MongoClient {
         return MongoClient(pointer: mongoc_client_pool_pop(ptr))
     }
-
+    
     /**
      *  Pushes back popped client connection.
      *
@@ -77,7 +77,7 @@ public class MongoClientPool {
      *
      *  - parameter block: block to be executed with popped client
      */
-	public func executeBlock(_ block: (_ client: MongoClient) -> Void) {
+    public func executeBlock(_ block: (_ client: MongoClient) -> Void) {
         let client = popClient()
         block(client)
         pushClient(client)

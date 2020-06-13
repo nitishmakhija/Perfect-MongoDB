@@ -22,8 +22,8 @@ import Foundation
 
 /// BSON error enum
 public enum BSONError: Error {
-	/// The JSON data was malformed.
-	case syntaxError(String)
+    /// The JSON data was malformed.
+    case syntaxError(String)
 }
 
 public typealias BSONPtr = UnsafeMutablePointer<bson_t>?
@@ -32,72 +32,72 @@ public typealias BSONPtr = UnsafeMutablePointer<bson_t>?
 // Swift 5 changed how bson.h and such are imported, which threw this code into disarray.
 // These funky funcs handle most of the differences.
 func toOpaque<T>(_ i: UnsafeMutablePointer<T>?) -> OpaquePointer? {
-	return OpaquePointer(i)
+    return OpaquePointer(i)
 }
 func toOpaque<T>(_ i: UnsafeMutablePointer<T>?) -> UnsafePointer<T>? {
-	return UnsafePointer(i)
+    return UnsafePointer(i)
 }
 func toOpaque<T>(_ i: UnsafeMutablePointer<T>?) -> UnsafeMutablePointer<T>? {
-	return i
+    return i
 }
 func toOpaque(_ i: UnsafePointer<bson_iter_t>?) -> OpaquePointer? {
-	return OpaquePointer(i)
+    return OpaquePointer(i)
 }
 func toOpaque(_ i: UnsafePointer<bson_iter_t>?) -> UnsafePointer<bson_iter_t>? {
-	return i
+    return i
 }
 func fromOpaque<T>(_ i: OpaquePointer?) -> UnsafeMutablePointer<T>? {
-	return UnsafeMutablePointer<T>(i)
+    return UnsafeMutablePointer<T>(i)
 }
 func fromOpaque<T>(_ i: OpaquePointer) -> UnsafeMutablePointer<T>? {
-	return UnsafeMutablePointer<T>(i)
+    return UnsafeMutablePointer<T>(i)
 }
 func fromOpaque<T>(_ i: UnsafeMutablePointer<T>?) -> UnsafeMutablePointer<T>? {
-	return i
+    return i
 }
 // --
 
-/// BSON class 
+/// BSON class
 public class BSON: CustomStringConvertible {
-	var doc: BSONPtr
-
+    var doc: BSONPtr
+    
     /// Return JSON representation of current BSON contents as a String
-	public var description: String {
-		return asString
-	}
-
+    public var description: String {
+        return asString
+    }
+    
     /**
-    *   Allocates a new doc structure. Call the various append() functions to add fields to the bson. You can iterate the doc at any time using a bson_iter_t and bson_iter_init().
-    */
-	public init() {
-		doc = fromOpaque(bson_new())
-	}
+     *   Allocates a new doc structure. Call the various append() functions to add fields to the bson. You can iterate the doc at any time using a bson_iter_t and bson_iter_init().
+     */
+    public init() {
+        doc = fromOpaque(bson_new())
+    }
     
     /** Creates a new doc structure using the data provided. bytes should contain bytes that can be copied into the new doc structure.
      *
      *- parameter bytes: A byte array containing a serialized bson document.
-    */
-	public init(bytes: [UInt8]) {
-		doc = fromOpaque(bson_new_from_data(bytes, bytes.count))
-	}
-
+     */
+    public init(bytes: [UInt8]) {
+        doc = fromOpaque(bson_new_from_data(bytes, bytes.count))
+    }
+    
     /**
      * Creates a new doc structure using the data provided. json should contain bytes that can be copied into the new doc structure.
      *
      * - parameter json: A string containing a json data.
-    */
-	public init(json: String) throws {
-		var error = bson_error_t()
+     */
+    public init(json: String) throws {
+        var error = bson_error_t()
         guard let doc = bson_new_from_json(json, json.utf8.count, &error) else {
-			let message = withUnsafePointer(to: &error.message) {
-				$0.withMemoryRebound(to: CChar.self, capacity: 0) {
-					String(validatingUTF8: $0) ?? "Unknown error while parsing JSON"
-				}
+            let message = withUnsafePointer(to: &error.message) {
+                $0.withMemoryRebound(to: CChar.self, capacity: 0) {
+                    String(validatingUTF8: $0) ?? "Unknown error while parsing JSON"
+                }
             }
             throw BSONError.syntaxError(message)
         }
-		self.doc = fromOpaque(doc)
-	}
+        self.doc = fromOpaque(doc)
+    }
     
     /**
      * Creates a new doc by copying the provided bson doc.
@@ -105,50 +105,50 @@ public class BSON: CustomStringConvertible {
      * - parameter document: An existing bson document.
      *
      */
-	public init(document: BSON) {
-		doc = fromOpaque(bson_copy(toOpaque(document.doc)))
-	}
-	
-	public init(map: [String: Any?]) {
-		doc = fromOpaque(bson_new())
-		for (key, val) in map {
-			if val is Int {
-				append(key: key, int: val as! Int)
-			} else if val is Double {
-				append(key: key, double: val as! Double)
-			} else if val is Bool {
-				append(key: key, bool: val as! Bool)
-			} else if val is [Int8] {
-				append(key: key, bytes: val as! [UInt8])
-			} else if val is [String: Any] {
-				append(key: key, document: BSON(map: val as! [String: Any]))
-			} else if val is Date {
-				append(key: key, date: val as! Date)
-			} else if let val = val {
-				append(key: key, string: "\(val)")
-			} else {
-				append(key: key)
-			}
-		}
-	}
-
-	init(rawBson: UnsafeMutablePointer<bson_t>?) {
-		doc = rawBson
-	}
+    public init(document: BSON) {
+        doc = fromOpaque(bson_copy(toOpaque(document.doc)))
+    }
+    
+    public init(map: [String: Any?]) {
+        doc = fromOpaque(bson_new())
+        for (key, val) in map {
+            if val is Int {
+                append(key: key, int: val as! Int)
+            } else if val is Double {
+                append(key: key, double: val as! Double)
+            } else if val is Bool {
+                append(key: key, bool: val as! Bool)
+            } else if val is [Int8] {
+                append(key: key, bytes: val as! [UInt8])
+            } else if val is [String: Any] {
+                append(key: key, document: BSON(map: val as! [String: Any]))
+            } else if val is Date {
+                append(key: key, date: val as! Date)
+            } else if let val = val {
+                append(key: key, string: "\(val)")
+            } else {
+                append(key: key)
+            }
+        }
+    }
+    
+    init(rawBson: UnsafeMutablePointer<bson_t>?) {
+        doc = rawBson
+    }
     
     deinit {
         close()
     }
-
+    
     /// close, destroy and release the current BSON document
-	public func close() {
+    public func close() {
         guard let doc = self.doc else {
             return
         }
-		bson_destroy(toOpaque(doc))
+        bson_destroy(toOpaque(doc))
         self.doc = nil
-	}
-
+    }
+    
     /**
      * Creates a new string containing current document in extended JSON format.
      *
@@ -157,46 +157,46 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: String
      */
-	public var asString: String {
-		var length = 0
-		guard let doc = self.doc, let data = bson_as_json(toOpaque(doc), &length) else {
-			return ""
-		}
-		defer {
-			bson_free(data)
-		}
-		return String(validatingUTF8: data) ?? ""
-	}
+    public var asString: String {
+        var length = 0
+        guard let doc = self.doc, let data = bson_as_json(toOpaque(doc), &length) else {
+            return ""
+        }
+        defer {
+            bson_free(data)
+        }
+        return String(validatingUTF8: data) ?? ""
+    }
     
     /** like asString() but for outermost arrays. */
-	public var asArrayString: String {
-		var length = 0
-		guard let doc = self.doc, let data = bson_array_as_json(toOpaque(doc), &length) else {
-			return ""
-		}
-		defer {
-			bson_free(data)
-		}
-		return String(validatingUTF8: data) ?? ""
-	}
-
+    public var asArrayString: String {
+        var length = 0
+        guard let doc = self.doc, let data = bson_array_as_json(toOpaque(doc), &length) else {
+            return ""
+        }
+        defer {
+            bson_free(data)
+        }
+        return String(validatingUTF8: data) ?? ""
+    }
+    
     /**
      * asBytes:
      *
      * - returns: A byte array from current BSON document
      */
-	public var asBytes: [UInt8] {
-		var ret = [UInt8]()
-		guard let doc = self.doc, let data = bson_get_data(toOpaque(doc)) else {
-			return ret
-		}
-		let length = Int(doc.pointee.len)
-		for i in 0..<length {
-			ret.append(data[i])
-		}
-		return ret
-	}
-
+    public var asBytes: [UInt8] {
+        var ret = [UInt8]()
+        guard let doc = self.doc, let data = bson_get_data(toOpaque(doc)) else {
+            return ret
+        }
+        let length = Int(doc.pointee.len)
+        for i in 0..<length {
+            ret.append(data[i])
+        }
+        return ret
+    }
+    
     /**
      * Appends a new field to self.doc of the type BSON_TYPE_DOCUMENT. The documents contents will be copied into self.doc.
      *
@@ -205,14 +205,14 @@ public class BSON: CustomStringConvertible {
      * - returns: true if successful; false if append would overflow max size.
      *
      */
-	@discardableResult
-	public func append(key k: String, document: BSON) -> Bool {
-		guard let sDoc = self.doc, let dDoc = document.doc else {
-			return false
-		}
-		return bson_append_document(toOpaque(sDoc), k, -1, toOpaque(dDoc))
-	}
-
+    @discardableResult
+    public func append(key k: String, document: BSON) -> Bool {
+        guard let sDoc = self.doc, let dDoc = document.doc else {
+            return false
+        }
+        return bson_append_document(toOpaque(sDoc), k, -1, toOpaque(dDoc))
+    }
+    
     /**
      * Appends a new field to self.doc with NULL for the value.
      *
@@ -220,14 +220,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_null(toOpaque(doc), k, -1)
-	}
-
+    @discardableResult
+    public func append(key k: String) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_null(toOpaque(doc), k, -1)
+    }
+    
     /**
      * Appends a new field to the self.doc of type BSON_TYPE_OID using the contents of
      *  oid.
@@ -237,15 +237,15 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, oid: bson_oid_t) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		var cpy = oid
-		return bson_append_oid(toOpaque(doc), k, -1, &cpy)
-	}
-
+    @discardableResult
+    public func append(key k: String, oid: bson_oid_t) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        var cpy = oid
+        return bson_append_oid(toOpaque(doc), k, -1, &cpy)
+    }
+    
     /**
      * Appends a new field of type BSON_TYPE_INT64 to self.doc .
      *
@@ -255,14 +255,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, int: Int) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_int64(toOpaque(doc), k, -1, Int64(int))
-	}
-
+    @discardableResult
+    public func append(key k: String, int: Int) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_int64(toOpaque(doc), k, -1, Int64(int))
+    }
+    
     /**
      * Appends a new field of type BSON_TYPE_INT32 to self.doc .
      *
@@ -272,30 +272,30 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, int32: Int32) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_int32(toOpaque(doc), k, -1, int32)
-	}
-
-	/**
-	* Appends a new field to self.doc of type BSON_TYPE_DATE_TIME.
-	* This is simply a wrapper for append(key:, dateTime:)
-	*
-	* - parameter key: The key for the field.
-	* - parameter date: The date to append.
-	*
-	*
-	* - returns: true if sucessful; otherwise false.
-	*/
-	@discardableResult
-	public func append(key k: String, date: Date) -> Bool {
-		let ms = date.timeIntervalSince1970 * 1000
-		return append(key: k, dateTime: Int64(ms))
-	}
-	
+    @discardableResult
+    public func append(key k: String, int32: Int32) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_int32(toOpaque(doc), k, -1, int32)
+    }
+    
+    /**
+     * Appends a new field to self.doc of type BSON_TYPE_DATE_TIME.
+     * This is simply a wrapper for append(key:, dateTime:)
+     *
+     * - parameter key: The key for the field.
+     * - parameter date: The date to append.
+     *
+     *
+     * - returns: true if sucessful; otherwise false.
+     */
+    @discardableResult
+    public func append(key k: String, date: Date) -> Bool {
+        let ms = date.timeIntervalSince1970 * 1000
+        return append(key: k, dateTime: Int64(ms))
+    }
+    
     /**
      * Appends a new field to self.doc of type BSON_TYPE_DATE_TIME.
      *
@@ -305,14 +305,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if sucessful; otherwise false.
      */
-	@discardableResult
-	public func append(key k: String, dateTime: Int64) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_date_time(toOpaque(doc), k, -1, dateTime)
-	}
-
+    @discardableResult
+    public func append(key k: String, dateTime: Int64) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_date_time(toOpaque(doc), k, -1, dateTime)
+    }
+    
     /**
      * Appends a BSON_TYPE_DATE_TIME field to self.doc using the time_t @value for the
      * number of seconds since UNIX epoch in UTC.
@@ -323,14 +323,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, time: time_t) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_time_t(toOpaque(doc), k, -1, time)
-	}
-
+    @discardableResult
+    public func append(key k: String, time: time_t) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_time_t(toOpaque(doc), k, -1, time)
+    }
+    
     /**
      * Appends a new field to self.doc of the type BSON_TYPE_DOUBLE.
      *
@@ -339,14 +339,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, double: Double) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_double(toOpaque(doc), k, -1, double)
-	}
-
+    @discardableResult
+    public func append(key k: String, double: Double) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_double(toOpaque(doc), k, -1, double)
+    }
+    
     /**
      * Appends a new field to self.doc of type BSON_TYPE_BOOL.
      *
@@ -355,14 +355,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, bool: Bool) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_bool(toOpaque(doc), k, -1, bool)
-	}
-
+    @discardableResult
+    public func append(key k: String, bool: Bool) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_bool(toOpaque(doc), k, -1, bool)
+    }
+    
     /**
      * Appends a new field to self.doc using @key as the key and @string as the UTF-8
      * encoded value.
@@ -372,13 +372,13 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, string: String) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_utf8(toOpaque(doc), k, -1, string, -1)
-	}
+    @discardableResult
+    public func append(key k: String, string: String) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_utf8(toOpaque(doc), k, -1, string, -1)
+    }
     
     /**
      * Appends a bytes buffer to the BSON document.
@@ -388,14 +388,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, bytes: [UInt8]) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_binary(toOpaque(doc), k, -1, BSON_SUBTYPE_BINARY, bytes, UInt32(bytes.count))
-	}
-
+    @discardableResult
+    public func append(key k: String, bytes: [UInt8]) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_binary(toOpaque(doc), k, -1, BSON_SUBTYPE_BINARY, bytes, UInt32(bytes.count))
+    }
+    
     /**
      * Appends a new field to self.doc of type BSON_TYPE_REGEX. @regex should
      * be the regex string. @options should contain the options for the regex.
@@ -417,14 +417,14 @@ public class BSON: CustomStringConvertible {
      *
      * - returns: true if successful; false if append would overflow max size.
      */
-	@discardableResult
-	public func append(key k: String, regex: String, options: String) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		return bson_append_regex(toOpaque(doc), k, -1, regex, options)
-	}
-
+    @discardableResult
+    public func append(key k: String, regex: String, options: String) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        return bson_append_regex(toOpaque(doc), k, -1, regex, options)
+    }
+    
     /**
      * Counts the number of elements found in self.doc.
      * - returns: Int value of keys count
@@ -433,8 +433,8 @@ public class BSON: CustomStringConvertible {
         guard let doc = self.doc else {
             return 0
         }
-		return Int(bson_count_keys(toOpaque(doc)))
-	}
+        return Int(bson_count_keys(toOpaque(doc)))
+    }
     
     /**
      * Checks to see if self.doc contains a field named @key.
@@ -449,9 +449,9 @@ public class BSON: CustomStringConvertible {
         guard let doc = self.doc else {
             return false
         }
-		return bson_has_field(toOpaque(doc), k)
-	}
-
+        return bson_has_field(toOpaque(doc), k)
+    }
+    
     /**
      * Appends a new field named key to self.doc, the field is, however,
      * incomplete. @child will be initialized so that you may add fields to the
@@ -472,9 +472,9 @@ public class BSON: CustomStringConvertible {
         guard let doc = self.doc, let cdoc = child.doc else {
             return false
         }
-		return bson_append_array_begin(toOpaque(doc), k, -1, toOpaque(cdoc))
-	}
-
+        return bson_append_array_begin(toOpaque(doc), k, -1, toOpaque(cdoc))
+    }
+    
     /**
      * Finishes the appending of an array to self.doc. child is considered
      * disposed after this call and should not be used any further.
@@ -487,23 +487,23 @@ public class BSON: CustomStringConvertible {
         guard let doc = self.doc, let cdoc = child.doc else {
             return false
         }
-		return bson_append_array_end(toOpaque(doc), toOpaque(cdoc))
-	}
-
-	public func appendDocumentBegin(key k: String, child: BSON) -> Bool {
-		guard let doc = self.doc, let cdoc = child.doc else {
-			return false
-		}
-		return bson_append_document_begin(toOpaque(doc), k, -1, toOpaque(cdoc))
-	}
-	
-	public func appendDocumentEnd(child: BSON) -> Bool {
-		guard let doc = self.doc, let cdoc = child.doc else {
-			return false
-		}
-		return bson_append_document_end(toOpaque(doc), toOpaque(cdoc))
-	}
-	
+        return bson_append_array_end(toOpaque(doc), toOpaque(cdoc))
+    }
+    
+    public func appendDocumentBegin(key k: String, child: BSON) -> Bool {
+        guard let doc = self.doc, let cdoc = child.doc else {
+            return false
+        }
+        return bson_append_document_begin(toOpaque(doc), k, -1, toOpaque(cdoc))
+    }
+    
+    public func appendDocumentEnd(child: BSON) -> Bool {
+        guard let doc = self.doc, let cdoc = child.doc else {
+            return false
+        }
+        return bson_append_document_end(toOpaque(doc), toOpaque(cdoc))
+    }
+    
     /**
      * Appends a BSON array to self.doc. BSON arrays are like documents where the
      * key is the string version of the index. For example, the first item of the
@@ -518,9 +518,9 @@ public class BSON: CustomStringConvertible {
         guard let doc = self.doc, let adoc = array.doc else {
             return false
         }
-		return bson_append_array(toOpaque(doc), k, -1, toOpaque(adoc))
-	}
-
+        return bson_append_array(toOpaque(doc), k, -1, toOpaque(adoc))
+    }
+    
     /**
      * Concatenate src with self.doc
      *
@@ -532,29 +532,29 @@ public class BSON: CustomStringConvertible {
         guard let doc = self.doc, let sdoc = src.doc else {
             return false
         }
-		return bson_concat(toOpaque(doc), toOpaque(sdoc))
-	}
-	
-	/// Represents a BSON OID.
-	public struct OID: CustomStringConvertible {
-		var oid: bson_oid_t
-		public var description: String {
-			let up = UnsafeMutablePointer<Int8>.allocate(capacity: 25)
-			defer {
-				up.deallocate()
-			}
-			var oid = self.oid
-			bson_oid_to_string(&oid, up)
-			return ptr2Str(up, length: 25) ?? ""
-		}
-		init(oid: bson_oid_t) {
-			self.oid = oid
-		}
-		public init(_ string: String) {
-			var oid = bson_oid_t()
-			bson_oid_init_from_string(&oid, string)
-			self.oid = oid
-		}
+        return bson_concat(toOpaque(doc), toOpaque(sdoc))
+    }
+    
+    /// Represents a BSON OID.
+    public struct OID: CustomStringConvertible {
+        var oid: bson_oid_t
+        public var description: String {
+            let up = UnsafeMutablePointer<Int8>.allocate(capacity: 25)
+            defer {
+                up.deallocate()
+            }
+            var oid = self.oid
+            bson_oid_to_string(&oid, up)
+            return ptr2Str(up, length: 25) ?? ""
+        }
+        init(oid: bson_oid_t) {
+            self.oid = oid
+        }
+        public init(_ string: String) {
+            var oid = bson_oid_t()
+            bson_oid_init_from_string(&oid, string)
+            self.oid = oid
+        }
         public init() {
             var oid = bson_oid_t()
             bson_oid_init(&oid, nil)
@@ -563,338 +563,339 @@ public class BSON: CustomStringConvertible {
         public static func newObjectId() -> String {
             return self.init().description
         }
-	}
-	
-	/// Add the OID with the given key.
-	/// Key defaults to "_id"
-	@discardableResult
-	public func append(key: String = "_id", oid: OID) -> Bool {
-		guard let doc = self.doc else {
-			return false
-		}
-		var oid = oid.oid
-		bson_append_oid(toOpaque(doc), key, -1, &oid)
-		return true
-	}
+    }
+    
+    /// Add the OID with the given key.
+    /// Key defaults to "_id"
+    @discardableResult
+    public func append(key: String = "_id", oid: OID) -> Bool {
+        guard let doc = self.doc else {
+            return false
+        }
+        var oid = oid.oid
+        bson_append_oid(toOpaque(doc), key, -1, &oid)
+        return true
+    }
 }
 
 extension BSON: Equatable {
-	static public func ==(lhs: BSON, rhs: BSON) -> Bool {
-		guard let ldoc = lhs.doc, let rdoc = rhs.doc else {
-			return false
-		}
-		let cmp = bson_compare(toOpaque(ldoc), toOpaque(rdoc))
-		return cmp == 0
-	}
+    static public func ==(lhs: BSON, rhs: BSON) -> Bool {
+        guard let ldoc = lhs.doc, let rdoc = rhs.doc else {
+            return false
+        }
+        let cmp = bson_compare(toOpaque(ldoc), toOpaque(rdoc))
+        return cmp == 0
+    }
 }
 
 extension BSON: Comparable {
-	static public func <(lhs: BSON, rhs: BSON) -> Bool {
-		guard let ldoc = lhs.doc, let rdoc = rhs.doc else {
-			return false
-		}
-		let cmp = bson_compare(toOpaque(ldoc), toOpaque(rdoc))
-		return cmp < 0
-	}
+    static public func <(lhs: BSON, rhs: BSON) -> Bool {
+        guard let ldoc = lhs.doc, let rdoc = rhs.doc else {
+            return false
+        }
+        let cmp = bson_compare(toOpaque(ldoc), toOpaque(rdoc))
+        return cmp < 0
+    }
 }
 
 public extension BSON {
-	func appendDocument(key: String, closure: (BSON) throws -> ()) rethrows {
-		let child = BSON()
-		_ = appendDocumentBegin(key: key, child: child)
-		try closure(child)
-		_ = appendDocumentEnd(child: child)
-	}
-	func appendArray(key: String, closure: (BSON) throws -> ()) rethrows {
-		let child = BSON()
-		_ = appendArrayBegin(key: key, child: child)
-		try closure(child)
-		_ = appendArrayEnd(child: child)
-	}
+    func appendDocument(key: String, closure: (BSON) throws -> ()) rethrows {
+        let child = BSON()
+        _ = appendDocumentBegin(key: key, child: child)
+        try closure(child)
+        _ = appendDocumentEnd(child: child)
+    }
+    func appendArray(key: String, closure: (BSON) throws -> ()) rethrows {
+        let child = BSON()
+        _ = appendArrayBegin(key: key, child: child)
+        try closure(child)
+        _ = appendArrayEnd(child: child)
+    }
 }
 
 class NoDestroyBSON: BSON {
-	override func close() {
-		self.doc = nil
-	}
+    override func close() {
+        self.doc = nil
+    }
 }
 
 private func ptr2Str(_ ptr: UnsafeMutablePointer<Int8>!, length: Int) -> String? {
-	var ary = Array(UnsafeBufferPointer(start: ptr, count: Int(length)))
-	ary.append(0)
-	return String(validatingUTF8: ary)
+    var ary = Array(UnsafeBufferPointer(start: ptr, count: Int(length)))
+    ary.append(0)
+    return String(validatingUTF8: ary)
 }
 
 extension BSON {
-	
-	/// An underlying BSON value type.
-	public enum BSONType: UInt32 {
-		case
-		eod           = 0x00,
-		double        = 0x01,
-		utf8          = 0x02,
-		document      = 0x03,
-		array         = 0x04,
-		binary        = 0x05,
-		undefined     = 0x06,
-		oid           = 0x07,
-		bool          = 0x08,
-		dateTime      = 0x09,
-		null          = 0x0A,
-		regex         = 0x0B,
-		dbpointer     = 0x0C,
-		code          = 0x0D,
-		symbol        = 0x0E,
-		codewscope    = 0x0F,
-		int32         = 0x10,
-		timestamp     = 0x11,
-		int64         = 0x12,
-		maxKey        = 0x7F,
-		minKey        = 0xFF
-	}
-	
-	/// A BSONValue produced by iterating a document's keys.
-	public struct BSONValue {
-		private enum Base {
-			case double(Double), string(String), bytes([UInt8])
-		}
-		/// The Mongo type for the value.
-		public let type: BSONType
-		
-		public let double: Double
-		public let string: String?
-		public let bytes: [UInt8]?
-		public let oid: OID?
-		public let doc: BSON?
-		
-		/// The value as an int, if possible.
-		public var int: Int? {
-			return Int(double)
-		}
-		
-		/// The value as an bool, if possible.
-		public var bool: Bool {
-			return double != 0.0
-		}
-		
-		// these *bson_value_t are not to be saved or modified
-		// the data is saved off into 1 or more base types depending on the value's type
-		init?(value: UnsafePointer<bson_value_t>, iter: UnsafePointer<bson_iter_t>) {
-			guard let type = BSONType(rawValue: value.pointee.value_type.rawValue) else {
-				return nil
-			}
-			self.type = type
-			switch type {
-			case .eod,
-					.undefined, .null, .dbpointer,
-					.maxKey, .minKey:
-				return nil
-			case .double:
-				double = value.pointee.value.v_double
-				string = String(double)
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .utf8:
-				let utf8 = value.pointee.value.v_utf8
-				bytes = nil
-				string = ptr2Str(utf8.str, length: Int(utf8.len))
-				double = Double(string ?? "0.0") ?? 0.0
-				oid = nil
-				doc = nil
-			case .array:
-				double = 0.0
-				string = nil
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .document:
-				var data = UnsafePointer<UInt8>(bitPattern: 0)
-				var len = 0 as UInt32
-				bson_iter_document(toOpaque(iter), &len, &data)
-				//bson_iter_document(OpaquePointer(iter), &len, &data)
-				let bson = bson_new_from_data(data, Int(len))
-				self.doc = BSON(rawBson: fromOpaque(bson))
-				bytes = nil
-				string = nil
-				double = 0.0
-				oid = nil
-			case .binary:
-				let b = value.pointee.value.v_binary
-				guard BSON_SUBTYPE_BINARY.rawValue == b.subtype.rawValue else {
-					return nil
-				}
-				bytes = Array(UnsafeBufferPointer(start: b.data, count: Int(b.data_len)))
-				string = nil
-				double = 0.0
-				oid = nil
-				doc = nil
-			case .oid:
-				let oid = value.pointee.value.v_oid
-				self.oid = OID(oid: oid)
-				string = self.oid?.description
-				double = 0.0
-				bytes = []
-				doc = nil
-			case .bool:
-				double = value.pointee.value.v_bool ? 1.0 : 0.0
-				string = nil
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .dateTime:
-				double = Double(value.pointee.value.v_datetime)
-				string = nil
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .regex:
-				let regex = value.pointee.value.v_regex
-				
-				let rstr = String(validatingUTF8: regex.regex)
-				let ostr = String(validatingUTF8: regex.options)
-				
-				double = 0.0
-				string = "/\(rstr ?? "")/\(ostr ?? "")"
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .code:
-				let code = value.pointee.value.v_code
-				bytes = nil
-				string = ptr2Str(code.code, length: Int(code.code_len))
-				double = 0.0
-				oid = nil
-				doc = nil
-			case .symbol:
-				let symbol = value.pointee.value.v_symbol
-				bytes = nil
-				string = ptr2Str(symbol.symbol, length: Int(symbol.len))
-				double = 0.0
-				oid = nil
-				doc = nil
-			case .codewscope:
-				double = 0.0
-				string = nil
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .int32:
-				double = Double(value.pointee.value.v_int32)
-				string = String(Int32(double))
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .timestamp:
-				double = 0.0
-				string = nil
-				bytes = nil
-				oid = nil
-				doc = nil
-			case .int64:
-				double = Double(value.pointee.value.v_int64)
-				string = String(Int64(double))
-				bytes = nil
-				oid = nil
-				doc = nil
-			}
-		}
-	}
-	
-	/// An iterator for BSON keys and values.
-	public struct Iterator {
-		var iter = bson_iter_t()
-		/// The type of the current value.
-		public var currentType: BSONType? {
-			var cpy = iter
-			return BSONType(rawValue: bson_iter_type(toOpaque(&cpy)).rawValue)
-		}
-		/// The key for the current value.
-		public var currentKey: String? {
-			var cpy = iter
-			guard let c = bson_iter_key(toOpaque(&cpy)) else {
-				return nil
-			}
-			return String(validatingUTF8: c)
-		}
-		/// If the current value is an narray or document, this returns an iterator
-		/// which can be used to walk it.
-		public var currentChildIterator: Iterator? {
-			guard let currentType = self.currentType else {
-				return nil
-			}
-			switch currentType {
-			case .array, .document:
-				return Iterator(recursing: self.iter)
-			default:
-				return nil
-			}
-		}
-		/// The BSON value for the current element.
-		public var currentValue: BSONValue? {
-			var cpy = iter
-			guard let b = bson_iter_value(toOpaque(&cpy)) else {
-				return nil
-			}
-			return BSONValue(value: b, iter: &cpy)
-		}
-		
-		private init() {}
-		
-		init?(bson: BSON) {
-			guard bson_iter_init(toOpaque(&iter), toOpaque(bson.doc)) else {
-				return nil
-			}
-		}
-		
-		init?(recursing: bson_iter_t) {
-			var c1 = recursing
-			guard bson_iter_recurse(toOpaque(&c1), toOpaque(&iter)) else {
-				return nil
-			}
-		}
-		
-		/// Advance to the next element.
-		/// Note that all iterations must begin by first calling next.
-		public mutating func next() -> Bool {
-			return bson_iter_next(toOpaque(&iter))
-		}
-		/// Located the key and advance the iterator to point at it.
-		/// If `withCase` is false then the search will be case in-sensitive.
-		public mutating func find(key: String, withCase: Bool = true) -> Bool {
-			return withCase ? bson_iter_find(toOpaque(&iter), key) : bson_iter_find_case(toOpaque(&iter), key)
-		}
-		/// Follow standard MongoDB dot notation to recurse into subdocuments.
-		/// Returns nil if the descendant is not found.
-		public mutating func findDescendant(key: String) -> Iterator? {
-			// NOTE:
-			// the mongo-c function bson_iter_find_descendant was crashing on macOS
-			guard !key.isEmpty else {
-				return self
-			}
-			var keys = key.split(separator: ".").makeIterator()
-			guard let subKey = keys.next() else {
-				return nil
-			}
-			return findDescendant(key: String(subKey), keyIt: keys)
-		}
-		
-		private mutating func findDescendant(key: String, keyIt: IndexingIterator<[String.SubSequence]>) -> Iterator? {
-			guard find(key: String(key)) else {
-				return nil
-			}
-			var it = keyIt
-			if let subKey = it.next() {
-				guard var sub = currentChildIterator else {
-					return nil
-				}
-				return sub.findDescendant(key: String(subKey), keyIt: it)
-			}
-			return self
-		}
-	}
-	/// Return a new iterator for this document.
-	public func iterator() -> Iterator? {
-		return Iterator(bson: self)
-	}
+    
+    /// An underlying BSON value type.
+    public enum BSONType: UInt32 {
+        case
+        eod           = 0x00,
+        double        = 0x01,
+        utf8          = 0x02,
+        document      = 0x03,
+        array         = 0x04,
+        binary        = 0x05,
+        undefined     = 0x06,
+        oid           = 0x07,
+        bool          = 0x08,
+        dateTime      = 0x09,
+        null          = 0x0A,
+        regex         = 0x0B,
+        dbpointer     = 0x0C,
+        code          = 0x0D,
+        symbol        = 0x0E,
+        codewscope    = 0x0F,
+        int32         = 0x10,
+        timestamp     = 0x11,
+        int64         = 0x12,
+        maxKey        = 0x7F,
+        minKey        = 0xFF
+    }
+    
+    /// A BSONValue produced by iterating a document's keys.
+    public struct BSONValue {
+        private enum Base {
+            case double(Double), string(String), bytes([UInt8])
+        }
+        /// The Mongo type for the value.
+        public let type: BSONType
+        
+        public let double: Double
+        public let string: String?
+        public let bytes: [UInt8]?
+        public let oid: OID?
+        public let doc: BSON?
+        
+        /// The value as an int, if possible.
+        public var int: Int? {
+            return Int(double)
+        }
+        
+        /// The value as an bool, if possible.
+        public var bool: Bool {
+            return double != 0.0
+        }
+        
+        // these *bson_value_t are not to be saved or modified
+        // the data is saved off into 1 or more base types depending on the value's type
+        init?(value: UnsafePointer<bson_value_t>, iter: UnsafePointer<bson_iter_t>) {
+            guard let type = BSONType(rawValue: value.pointee.value_type.rawValue) else {
+                return nil
+            }
+            self.type = type
+            switch type {
+            case .eod,
+                 .undefined, .null, .dbpointer,
+                 .maxKey, .minKey:
+                return nil
+            case .double:
+                double = value.pointee.value.v_double
+                string = String(double)
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .utf8:
+                let utf8 = value.pointee.value.v_utf8
+                bytes = nil
+                string = ptr2Str(utf8.str, length: Int(utf8.len))
+                double = Double(string ?? "0.0") ?? 0.0
+                oid = nil
+                doc = nil
+            case .array:
+                double = 0.0
+                string = nil
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .document:
+                var data = UnsafePointer<UInt8>(bitPattern: 0)
+                var len = 0 as UInt32
+                bson_iter_document(toOpaque(iter), &len, &data)
+                //bson_iter_document(OpaquePointer(iter), &len, &data)
+                let bson = bson_new_from_data(data, Int(len))
+                self.doc = BSON(rawBson: fromOpaque(bson))
+                bytes = nil
+                string = nil
+                double = 0.0
+                oid = nil
+            case .binary:
+                let b = value.pointee.value.v_binary
+                guard BSON_SUBTYPE_BINARY.rawValue == b.subtype.rawValue else {
+                    return nil
+                }
+                bytes = Array(UnsafeBufferPointer(start: b.data, count: Int(b.data_len)))
+                string = nil
+                double = 0.0
+                oid = nil
+                doc = nil
+            case .oid:
+                let oid = value.pointee.value.v_oid
+                self.oid = OID(oid: oid)
+                string = self.oid?.description
+                double = 0.0
+                bytes = []
+                doc = nil
+            case .bool:
+                double = value.pointee.value.v_bool ? 1.0 : 0.0
+                string = nil
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .dateTime:
+                double = Double(value.pointee.value.v_datetime)
+                string = nil
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .regex:
+                let regex = value.pointee.value.v_regex
+                
+                let rstr = String(validatingUTF8: regex.regex)
+                let ostr = String(validatingUTF8: regex.options)
+                
+                double = 0.0
+                string = "/\(rstr ?? "")/\(ostr ?? "")"
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .code:
+                let code = value.pointee.value.v_code
+                bytes = nil
+                string = ptr2Str(code.code, length: Int(code.code_len))
+                double = 0.0
+                oid = nil
+                doc = nil
+            case .symbol:
+                let symbol = value.pointee.value.v_symbol
+                bytes = nil
+                string = ptr2Str(symbol.symbol, length: Int(symbol.len))
+                double = 0.0
+                oid = nil
+                doc = nil
+            case .codewscope:
+                double = 0.0
+                string = nil
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .int32:
+                double = Double(value.pointee.value.v_int32)
+                string = String(Int32(double))
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .timestamp:
+                double = 0.0
+                string = nil
+                bytes = nil
+                oid = nil
+                doc = nil
+            case .int64:
+                double = Double(value.pointee.value.v_int64)
+                string = String(Int64(double))
+                bytes = nil
+                oid = nil
+                doc = nil
+            }
+        }
+    }
+    
+    /// An iterator for BSON keys and values.
+    public struct Iterator {
+        var iter = bson_iter_t()
+        /// The type of the current value.
+        public var currentType: BSONType? {
+            var cpy = iter
+            return BSONType(rawValue: bson_iter_type(toOpaque(&cpy)).rawValue)
+        }
+        /// The key for the current value.
+        public var currentKey: String? {
+            var cpy = iter
+            guard let c = bson_iter_key(toOpaque(&cpy)) else {
+                return nil
+            }
+            return String(validatingUTF8: c)
+        }
+        /// If the current value is an narray or document, this returns an iterator
+        /// which can be used to walk it.
+        public var currentChildIterator: Iterator? {
+            guard let currentType = self.currentType else {
+                return nil
+            }
+            switch currentType {
+            case .array, .document:
+                return Iterator(recursing: self.iter)
+            default:
+                return nil
+            }
+        }
+        /// The BSON value for the current element.
+        public var currentValue: BSONValue? {
+            var cpy = iter
+            guard let b = bson_iter_value(toOpaque(&cpy)) else {
+                return nil
+            }
+            return BSONValue(value: b, iter: &cpy)
+        }
+        
+        private init() {}
+        
+        init?(bson: BSON) {
+            guard bson_iter_init(toOpaque(&iter), toOpaque(bson.doc)) else {
+                return nil
+            }
+        }
+        
+        init?(recursing: bson_iter_t) {
+            var c1 = recursing
+            guard bson_iter_recurse(toOpaque(&c1), toOpaque(&iter)) else {
+                return nil
+            }
+        }
+        
+        /// Advance to the next element.
+        /// Note that all iterations must begin by first calling next.
+        public mutating func next() -> Bool {
+            return bson_iter_next(toOpaque(&iter))
+        }
+        /// Located the key and advance the iterator to point at it.
+        /// If `withCase` is false then the search will be case in-sensitive.
+        public mutating func find(key: String, withCase: Bool = true) -> Bool {
+            return withCase ? bson_iter_find(toOpaque(&iter), key) : bson_iter_find_case(toOpaque(&iter), key)
+        }
+        /// Follow standard MongoDB dot notation to recurse into subdocuments.
+        /// Returns nil if the descendant is not found.
+        public mutating func findDescendant(key: String) -> Iterator? {
+            // NOTE:
+            // the mongo-c function bson_iter_find_descendant was crashing on macOS
+            guard !key.isEmpty else {
+                return self
+            }
+            var keys = key.split(separator: ".").makeIterator()
+            guard let subKey = keys.next() else {
+                return nil
+            }
+            return findDescendant(key: String(subKey), keyIt: keys)
+        }
+        
+        private mutating func findDescendant(key: String, keyIt: IndexingIterator<[String.SubSequence]>) -> Iterator? {
+            guard find(key: String(key)) else {
+                return nil
+            }
+            var it = keyIt
+            if let subKey = it.next() {
+                guard var sub = currentChildIterator else {
+                    return nil
+                }
+                return sub.findDescendant(key: String(subKey), keyIt: it)
+            }
+            return self
+        }
+    }
+    /// Return a new iterator for this document.
+    public func iterator() -> Iterator? {
+        return Iterator(bson: self)
+    }
 }
+
